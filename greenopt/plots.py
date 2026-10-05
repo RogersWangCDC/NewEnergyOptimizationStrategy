@@ -418,19 +418,20 @@ def _sens_dual(ax, table, style, xkey, ylabel_left, ylabel_right):
     xs = table["capacity"].to_numpy(float)
     cost = table["annual_total"].to_numpy(float) / 1e4
     unused = table["unused_rate"].to_numpy(float)
-    ax.plot(xs, cost, "-o", color=PALETTE["blue"], markersize=2.6, label=ylabel_left)
+    left = ax.plot(xs, cost, "-o", color=PALETTE["blue"], markersize=2.6)[0]
     ax.set_xlabel(xkey)
     ax.set_ylabel(ylabel_left)
     i_min = int(np.argmin(cost))
-    ax.plot(xs[i_min], cost[i_min], "v", color=PALETTE["blue"], markersize=4.5, zorder=5)
+    # 最低点标记不参与图例：不显式指定句柄时 matplotlib 会给它自动命名成 child1
+    ax.plot(xs[i_min], cost[i_min], "v", color=PALETTE["blue"], markersize=4.5,
+            zorder=5, label="_nolegend_")
     twin = ax.twinx()
-    twin.plot(xs, unused, "--s", color=PALETTE["verm"], markersize=2.6,
-              linewidth=style["line_width"] * 0.9, label=ylabel_right)
+    right = twin.plot(xs, unused, "--s", color=PALETTE["verm"], markersize=2.6,
+                      linewidth=style["line_width"] * 0.9)[0]
     twin.set_ylabel(ylabel_right)
     twin.grid(False)
     twin.minorticks_on()
-    handles = ax.get_lines() + twin.get_lines()
-    ax.legend(handles, [h.get_label() for h in handles], loc="upper right",
+    ax.legend([left, right], [ylabel_left, ylabel_right], loc="upper right",
               frameon=False, fontsize=style["font_size"] - 1)
 
 
@@ -453,23 +454,23 @@ def _plot_sensitivity(sensitivity, cfg, lang, style, out_dir):
             ax.plot(xs, table["sell_rate"], "--s", color=PALETTE["verm"], markersize=2.6, label=tx["sellRate"])
             ax.plot(xs, table["curt_rate"], ":^", color=PALETTE["green"], markersize=2.6, label=tx["curtRate"])
             ax.set_xlabel(tx["xE"]); ax.set_ylabel(tx["yRate"])
-            ax.legend(loc="upper right", frameon=False, fontsize=style["font_size"] - 1)
+            # 绿电自用率通常贴顶，图例放右上会压住曲线，改放右侧中部
+            ax.legend(loc="center right", frameon=False, fontsize=style["font_size"] - 1)
         elif kind == "cost_split":
             for col, color, name in (("capex_pv", "orange", tx["capexPv"]), ("capex_wt", "sky", tx["capexWt"]),
                                      ("capex_ess", "purple", tx["capexEss"]), ("capex_op", "grey", tx["opCost"])):
                 ax.plot(xs, table[col], "-o", color=PALETTE[color], markersize=2.4, linewidth=style["line_width"] * 0.9, label=name)
             ax.set_xlabel(tx["xE"]); ax.set_ylabel(tx["yCapex"])
-            ax.legend(loc="upper right", frameon=False, fontsize=style["font_size"] - 1, ncol=2)
+            ax.legend(loc="center right", frameon=False, fontsize=style["font_size"] - 1, ncol=2)
         else:   # gen_share
-            ax.plot(xs, table["gen_share"], "-o", color=PALETTE["blue"], markersize=2.6, label=tx["yGenShare"])
+            left = ax.plot(xs, table["gen_share"], "-o", color=PALETTE["blue"], markersize=2.6)[0]
             ax.set_xlabel(tx["xGen"]); ax.set_ylabel(tx["yGenShare"])
             twin = ax.twinx()
-            twin.plot(xs, table["gen_lcoe_yuan"], "--^", color=PALETTE["verm"], markersize=2.6,
-                      linewidth=style["line_width"] * 0.9, label=tx["yGenLcoe"])
+            right = twin.plot(xs, table["gen_lcoe_yuan"], "--^", color=PALETTE["verm"], markersize=2.6,
+                              linewidth=style["line_width"] * 0.9)[0]
             twin.set_ylabel(tx["yGenLcoe"])
             twin.grid(False); twin.minorticks_on()
-            handles = ax.get_lines() + twin.get_lines()
-            ax.legend(handles, [h.get_label() for h in handles], loc="upper right",
+            ax.legend([left, right], [tx["yGenShare"], tx["yGenLcoe"]], loc="lower right",
                       frameon=False, fontsize=style["font_size"] - 1)
         decorate(ax)
 
