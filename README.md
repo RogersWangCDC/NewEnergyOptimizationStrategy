@@ -1,0 +1,2 @@
+# NewEnergyOptimizationStrategy
+风光储+自发电投资成本与运行成本最优化策略
