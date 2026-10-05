@@ -1,0 +1,18 @@
+# Local environment / 本地环境
+.env
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Generated optimisation output / 优化生成结果
+results/
+
+# Agent workspace notes / 智能体工作区记录（不入库）
+.workbuddy/
+
+# IDE and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
